@@ -23,8 +23,7 @@ jobs:
 
       - name: Render .d2 files to SVG
         run: |
-            echo "Files in diagrams directory:"
-            ls -R doc/
+            mkdir -p doc/d2/output
             # Loop through all .d2 files in the 'doc/d2' folder
             for file in doc/d2/**/*.d2; do
                 # Extract filename without extension
@@ -32,7 +31,7 @@ jobs:
 
                 # Check if the file exists and run D2Lang to render the .d2 file to .svg
                 if [[ -f "$file" ]]; then
-                docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/your-username/d2lang:latest d2 "/workspace/$file" "/workspace/doc/$filename.svg"
+                docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/snekussaurier/d2lang:latest d2 "/workspace/$file" "/workspace/doc/d2/output/$filename.svg"
                 fi
             done
 
@@ -40,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rendered-diagrams
-          path: doc/*.svg
+          path: doc/d2/output/*.svg
