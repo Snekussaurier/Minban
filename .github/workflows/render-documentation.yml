@@ -26,8 +26,6 @@ jobs:
 
       - name: Render .d2 files to SVG
         run: |
-            chmod -R 777 doc/
-            
             for file in "doc/d2"/* 
             do
                 # Extract filename without extension
@@ -43,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rendered-diagrams
-          path: doc/*.svg
+          path: ${GITHUB_WORKSPACE}/doc/*svg
