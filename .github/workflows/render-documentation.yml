@@ -24,7 +24,7 @@ jobs:
       - name: Render .d2 files to SVG
         run: |
             echo "Files in diagrams directory:"
-            ls -R diagrams/
+            ls -R doc/
             # Loop through all .d2 files in the 'diagrams' folder
             for file in doc/d2/; do
             # Extract filename without extension
