@@ -1,0 +1,40 @@
+name: Render D2 Files to SVG
+
+on:
+  push:
+    paths:
+      - 'doc/d2/'
+jobs:
+  render-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Render .d2 files to SVG
+        run: |
+          # Loop through all .d2 files in the 'diagrams' folder
+          for file in doc/d2/; do
+            # Extract filename without extension
+            filename=$(basename "$file" .d2)
+
+            # Run D2Lang to render the .d2 file to .svg
+            docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/$file" "/workspace/doc/$filename.svg"
+          done
+
+      - name: Upload SVG files
+        uses: actions/upload-artifact@v2
+        with:
+          name: rendered-diagrams
+          path: doc/*.svg
