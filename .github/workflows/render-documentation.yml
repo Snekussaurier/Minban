@@ -3,7 +3,6 @@ name: Render D2 Files to SVG
 on:
   push:
     
-
 jobs:
   render-diagrams:
     runs-on: ubuntu-latest
@@ -34,7 +33,7 @@ jobs:
           done
 
       - name: Upload SVG files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: rendered-diagrams
           path: doc/*.svg
