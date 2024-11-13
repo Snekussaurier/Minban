@@ -6,6 +6,9 @@ on:
 jobs:
   render-diagrams:
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        packages: write
 
     steps:
       - name: Checkout code
@@ -26,11 +29,11 @@ jobs:
             for file in "doc/d2"/* 
             do
                 # Extract filename without extension
-                filename=$(basename "$file")
+                filename=$(basename "$file" .d2)
                 echo $filename
                 # Check if the file exists and run D2Lang to render the .d2 file to .svg
                 if [[ -f "$file" ]]; then
-                docker run --rm -v ${GITHUB_WORKSPACE}:/workspace ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/doc/d2/$filename" "/workspace/doc/$filename.svg"
+                docker run --rm -v ${GITHUB_WORKSPACE}:/workspace ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/doc/d2/$filename.d2" "/workspace/doc/$filename.svg"
                 fi
             done
 
