@@ -1,18 +1,19 @@
 MinBun SQLite: {
     user:{
         shape: sql_table
-        id: UUID {constraint: primary_key}
+        id: char(36) {constraint: primary_key}
         name: varchar(40) {constraint: not_null}
         password: char(64) {constraint: not_null}
     } 
 
     card: {
         shape: sql_table
-        id: UUID {constraint: primary_key}
+        id: char(36) {constraint: primary_key}
         title: varchar(60) {constraint: not_null}
         description: text {constraint: not_null}
+        position: int {constraint: not_null}
         state: int {constraint: foreign_key}
-        user: UUID {constraint: foreign_key}
+        user_id: char(36) {constraint: foreign_key}
     }
 
     tag: {
@@ -23,7 +24,7 @@ MinBun SQLite: {
 
     card_tags: {
         shape: sql_table
-        card_id: UUID {constraint: foreign_key}
+        card_id: varchar(36) {constraint: foreign_key}
         tag: varchar(20) {constraint: foreign_key}
     }
 
@@ -33,8 +34,43 @@ MinBun SQLite: {
         name: varchar(20) {constraint: not_null} 
     }
 
-    user.id -> card.user
-    state.id -> card.state
-    card.id -> card_tags.card_id
-    tag.tag_name -> card_tags.tag
+    activity_log {
+        shape: sql_table
+        id: char(36) {constraint: primary_key}
+        card_id: char(36) {constraint: foreign_key}
+        user_id: char(36) {constraint: foreign_key}
+        timestamp: datetime {constraint: not_null}
+        action_id: int {constraint: foreign_key}
+    }
+
+    activity_action {
+        shape: sql_table
+        id: int {constraint: primary_key}
+        action_name: varchar(20) {constraint: not_null}
+    }
+
+    user.id -> card.user_id {
+        source-arrowhead: 1
+        target-arrowhead: *
+    }
+    state.id -> card.state {
+        source-arrowhead: 1
+        target-arrowhead: *
+    }
+    card.id -> card_tags.card_id {
+        source-arrowhead: *
+        target-arrowhead: *
+    }
+    tag.tag_name -> card_tags.tag {
+        source-arrowhead: *
+        target-arrowhead: *
+    }
+    activity_action.id -> activity_log.action_id {
+        source-arrowhead: *
+        target-arrowhead: 1
+    }
+    card.id -> activity_log.card_id {
+        source-arrowhead: *
+        target-arrowhead: *
+    }
   }
