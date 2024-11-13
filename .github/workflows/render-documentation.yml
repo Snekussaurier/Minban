@@ -30,7 +30,7 @@ jobs:
                 echo $filename
                 # Check if the file exists and run D2Lang to render the .d2 file to .svg
                 if [[ -f "$file" ]]; then
-                docker run --rm -v ${GITHUB_WORKSPACE}:/workspace ghcr.io/snekussaurier/d2lang:latest d2 "/workspace/doc/d2/$filename" "/workspace/doc/$filename.svg"
+                docker run --rm -v ${GITHUB_WORKSPACE}:/workspace ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/doc/d2/$filename" "/workspace/doc/$filename.svg"
                 fi
             done
 
