@@ -25,14 +25,16 @@ jobs:
         run: |
             echo "Files in diagrams directory:"
             ls -R doc/
-            # Loop through all .d2 files in the 'diagrams' folder
-            for file in doc/d2/; do
-            # Extract filename without extension
+            # Loop through all .d2 files in the 'doc/d2' folder
+            for file in doc/d2/**/*.d2; do
+                # Extract filename without extension
                 filename=$(basename "$file" .d2)
 
-                # Run D2Lang to render the .d2 file to .svg
-                docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/$file" "/workspace/doc/$filename.svg"
-             done
+                # Check if the file exists and run D2Lang to render the .d2 file to .svg
+                if [[ -f "$file" ]]; then
+                docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/your-username/d2lang:latest d2 "/workspace/$file" "/workspace/doc/d2/output/$filename.svg"
+                fi
+            done
 
       - name: Upload SVG files
         uses: actions/upload-artifact@v4
