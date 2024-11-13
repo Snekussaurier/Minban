@@ -2,8 +2,8 @@ name: Render D2 Files to SVG
 
 on:
   push:
-    paths:
-      - 'doc/d2/'
+    
+
 jobs:
   render-diagrams:
     runs-on: ubuntu-latest
