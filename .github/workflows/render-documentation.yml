@@ -23,14 +23,16 @@ jobs:
 
       - name: Render .d2 files to SVG
         run: |
-          # Loop through all .d2 files in the 'diagrams' folder
-          for file in doc/d2/; do
+            echo "Files in diagrams directory:"
+            ls -R diagrams/
+            # Loop through all .d2 files in the 'diagrams' folder
+            for file in doc/d2/; do
             # Extract filename without extension
-            filename=$(basename "$file" .d2)
+                filename=$(basename "$file" .d2)
 
-            # Run D2Lang to render the .d2 file to .svg
-            docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/$file" "/workspace/doc/$filename.svg"
-          done
+                # Run D2Lang to render the .d2 file to .svg
+                docker run --rm -v "${GITHUB_WORKSPACE}:/workspace" ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/$file" "/workspace/doc/$filename.svg"
+             done
 
       - name: Upload SVG files
         uses: actions/upload-artifact@v4
