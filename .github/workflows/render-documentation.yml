@@ -41,4 +41,7 @@ jobs:
             ls -R doc/
         
       - name: Upload SVG files
-        run: ls -R doc/
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-diagrams
+          path: doc/
