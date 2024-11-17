@@ -1,0 +1,20 @@
+meta {
+  name: createCard
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{minban}}/api/v1/{{user_id}}/card
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Test2",
+    "description": "",
+    "position": 1,
+    "state_id": 1
+  }
+}

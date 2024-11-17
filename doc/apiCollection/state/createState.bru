@@ -1,0 +1,19 @@
+meta {
+  name: createState
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{minban}}/state
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Backlog",
+    "position": 4,
+    "color": "8957e7"
+  }
+}

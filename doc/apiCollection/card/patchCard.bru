@@ -1,0 +1,21 @@
+meta {
+  name: patchCard
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{minban}}/api/v1/{{user_id}}/card/44bf4a86-373d-428f-959f-5f8099dc9955
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Test2",
+    "description": "",
+    "position": 2,
+    "state_id": 1,
+    "tags": [{"name": "Feature"}]
+  }
+}

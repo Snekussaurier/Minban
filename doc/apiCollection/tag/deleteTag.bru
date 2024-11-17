@@ -1,0 +1,17 @@
+meta {
+  name: deleteTag
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{minban}}/tag
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Enhancement"
+  }
+}
