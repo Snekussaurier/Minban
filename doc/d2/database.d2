@@ -1,4 +1,4 @@
-MiniBun SQLite: {
+MinBan SQLite: {
     user:{
         shape: sql_table
         id: char(36) {constraint: primary_key}
@@ -18,7 +18,7 @@ MiniBun SQLite: {
 
     tag: {
         shape: sql_table
-        tag_name: varchar(20) {constraint: primary_key}
+        name: varchar(20) {constraint: primary_key}
         color: varchar(6) {constraint: not_null}
     }
 
@@ -32,21 +32,8 @@ MiniBun SQLite: {
         shape: sql_table
         id: int {constraint: primary_key}
         name: varchar(20) {constraint: not_null} 
-    }
-
-    activity_log {
-        shape: sql_table
-        id: char(36) {constraint: primary_key}
-        card_id: char(36) {constraint: foreign_key}
-        user_id: char(36) {constraint: foreign_key}
-        timestamp: datetime {constraint: not_null}
-        action_id: int {constraint: foreign_key}
-    }
-
-    activity_action {
-        shape: sql_table
-        id: int {constraint: primary_key}
-        action_name: varchar(20) {constraint: not_null}
+        position: int {constraint: not_null}
+        color: char(6) {constraint: not_null}
     }
 
     user.id -> card.user_id {
@@ -62,14 +49,6 @@ MiniBun SQLite: {
         target-arrowhead: *
     }
     tag.tag_name -> card_tags.tag {
-        source-arrowhead: *
-        target-arrowhead: *
-    }
-    activity_action.id -> activity_log.action_id {
-        source-arrowhead: *
-        target-arrowhead: 1
-    }
-    card.id -> activity_log.card_id {
         source-arrowhead: *
         target-arrowhead: *
     }
