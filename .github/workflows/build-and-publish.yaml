@@ -52,10 +52,12 @@ jobs:
         id: tag_name
         run: |
           TAG=${GITHUB_REF##*/}
-          echo "${TAG#v}" >> "$GITHUB_ENV"
+          TAG_NO_V=${TAG#v}
+          echo "Tag without 'v': $TAG_NO_V"
+          echo "TAG_NO_V=$TAG_NO_V" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/snekussaurier/minban-backend:${{ github.ref_name }}
+          tags: ghcr.io/snekussaurier/minban-backend:${{ steps.tag_name.outputs.TAG_NO_V }}

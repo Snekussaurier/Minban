@@ -2,6 +2,8 @@ name: Render D2 Files to SVG
 
 on:
   push:
+    branches:
+      - "main"
     paths:
       - 'doc/d2/**'
     
