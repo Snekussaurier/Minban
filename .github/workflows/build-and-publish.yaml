@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build Docker Image
+    name: Build Go Project
     runs-on: ubuntu-latest
 
     steps:
