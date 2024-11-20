@@ -5,15 +5,15 @@ meta {
 }
 
 post {
-  url: {{minban}}/state
+  url: {{minban}}/api/v1/state
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "name": "Backlog",
-    "position": 4,
+    "name": "Postboned",
+    "position": 6,
     "color": "8957e7"
   }
 }

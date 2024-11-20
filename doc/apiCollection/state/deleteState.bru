@@ -5,13 +5,7 @@ meta {
 }
 
 delete {
-  url: {{minban}}/state
+  url: {{minban}}/api/v1/state/4
   body: json
   auth: inherit
-}
-
-body:json {
-  {
-    "id": 4
-  }
 }
