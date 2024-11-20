@@ -12,20 +12,20 @@ func SetupRouter() *gin.Engine {
 	router.POST("/api/v1/login", controller.Login)
 
 	// Authorisation required
-	authorized := router.Group("/api/v1/:user_id")
+	authorized := router.Group("/api/v1")
 	authorized.Use(middleware.AuthRequried())
 	{
 		// State routes
 		authorized.GET("/states", controller.GetStates)
 		authorized.POST("/state", controller.PostState)
-		authorized.PATCH("/state", controller.PatchState)
-		authorized.DELETE("/state", controller.DeleteState)
+		authorized.PATCH("/state/:state_id", controller.PatchState)
+		authorized.DELETE("/state/:state_id", controller.DeleteState)
 
 		// Tag routes
 		authorized.GET("/tags", controller.GetTags)
 		authorized.POST("/tag", controller.PostTag)
-		authorized.PATCH("/tag", controller.PatchTag)
-		authorized.DELETE("/tag", controller.DeleteTag)
+		authorized.PATCH("/tag/:tag_id", controller.PatchTag)
+		authorized.DELETE("/tag/:tag_id", controller.DeleteTag)
 
 		// Card routes
 		authorized.GET("/cards", controller.GetCards)

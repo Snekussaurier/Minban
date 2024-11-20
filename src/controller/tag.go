@@ -3,60 +3,119 @@ package controller
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/snekussaurier/minban-backend/database"
 	"github.com/snekussaurier/minban-backend/mod"
+	"github.com/snekussaurier/minban-backend/utils"
 )
 
-func GetTags(context *gin.Context) {
+func GetTags(c *gin.Context) {
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
+		return
+	}
+
 	var tags []database.Tag
-	if err := database.DB.Find(&tags).Error; err != nil {
+	if err := database.DB.Where("user_id = ?", userIDStr).Find(&tags).Error; err != nil {
 		log.Fatalf("failed to query tags: %v", err)
 	}
 
-	context.JSON(http.StatusOK, tags)
+	c.JSON(http.StatusOK, tags)
 }
 
-func PostTag(context *gin.Context) {
-	var request = database.Tag{}
-
-	if err := context.ShouldBindJSON(&request); err != nil {
-		context.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
+func PostTag(c *gin.Context) {
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
 		return
 	}
 
-	if err := database.DB.Create(&request).Error; err != nil {
-		log.Fatalf("failed to create tag: %v", err)
-	}
+	var tag = database.Tag{}
 
-	context.JSON(http.StatusCreated, request)
-}
-
-func PatchTag(context *gin.Context) {
-	var request = database.Tag{}
-
-	if err := context.ShouldBindJSON(&request); err != nil {
-		context.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
+	if err := c.ShouldBindJSON(&tag); err != nil {
+		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	if err := database.DB.Save(&request).Error; err != nil {
-		log.Fatalf("failed to update tag: %v", err)
-	}
+	tag.UserID = userIDStr
 
-	context.Status(http.StatusOK)
-}
+	var existingTag database.Tag
 
-func DeleteTag(context *gin.Context) {
-	var request = mod.NameRequest{}
-
-	if err := context.ShouldBindJSON(&request); err != nil {
-		context.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
+	result := database.DB.First(&existingTag, "user_id = ? AND name = ?", userIDStr, tag.Name)
+	if result.Error == nil {
+		c.JSON(http.StatusConflict, mod.ErrorResponse{Error: "Tag with this name already exists"})
 		return
 	}
 
-	if err := database.DB.Delete(&database.Tag{}, request.Name).Error; err != nil {
-		log.Fatalf("failed to delete tag: %v", err)
+	if err := database.DB.Create(&tag).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
 	}
+
+	c.JSON(http.StatusCreated, gin.H{"id": tag.ID})
+}
+
+func PatchTag(c *gin.Context) {
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
+		return
+	}
+
+	var tag = database.Tag{}
+	var tagIdStr = c.Param("tag_id")
+
+	if err := c.ShouldBindJSON(&tag); err != nil {
+		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	tag.UserID = userIDStr
+	tagId, err := strconv.Atoi(tagIdStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	tag.ID = tagId
+
+	result := database.DB.Model(&database.State{}).Where("name = ? AND user_id = ?", tag.Name, userIDStr).Updates(tag)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: result.Error.Error()})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Tag not found"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func DeleteTag(c *gin.Context) {
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
+		return
+	}
+
+	var tagIdStr = c.Param("tag_id")
+	tagId, err := strconv.Atoi(tagIdStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	result := database.DB.Where("id = ? AND user_id = ?", tagId, userIDStr).Delete(&database.Tag{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: result.Error.Error()})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Tag not found"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

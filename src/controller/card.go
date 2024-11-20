@@ -1,45 +1,73 @@
 package controller
 
 import (
+	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/snekussaurier/minban-backend/database"
 	"github.com/snekussaurier/minban-backend/mod"
+	"github.com/snekussaurier/minban-backend/utils"
 	"gorm.io/gorm"
 )
 
 func GetCards(c *gin.Context) {
-	var cards []database.Card
-
-	userID := c.Param("user_id")
-	query := database.DB.Preload("Tags")
-
-	if userID != "" {
-		query = query.Where("user_id = ?", userID)
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
+		return
 	}
 
-	if err := query.Find(&cards).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	query := database.DB.Preload("Tags").Where("user_id = ?", userIDStr)
+
+	var cards []database.Card
+	if err := query.Where("user_id = ?", userIDStr).Find(&cards).Error; err != nil {
+		log.Fatalf("failed to query tags: %v", err)
 	}
 
 	c.JSON(http.StatusOK, cards)
 }
 
 func PostCard(c *gin.Context) {
-	var card database.Card
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
+		return
+	}
 
-	userID := c.Param("user_id")
+	var card database.Card
 
 	if err := c.ShouldBindJSON(&card); err != nil {
 		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
+	// Validate state
+	var state database.State
+	if err := database.DB.First(&state, "id = ? AND user_id = ?", card.StateID, userIDStr).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: "State with ID: " + strconv.Itoa(card.StateID) + " not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	// Validate tags
+	for _, tagID := range card.Tags {
+		var tag database.Tag
+		if err := database.DB.First(&tag, "id = ? AND user_id = ?", tagID.ID, userIDStr).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: "Tag with ID: " + strconv.Itoa(tagID.ID) + " not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+			return
+		}
+	}
+
 	card.ID = uuid.New().String()
-	card.UserID = userID
+	card.UserID = userIDStr
 
 	if err := database.DB.Create(&card).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
@@ -50,12 +78,15 @@ func PostCard(c *gin.Context) {
 }
 
 func PatchCard(c *gin.Context) {
-	userId := c.Param("user_id")
-	cardId := c.Param("card_id")
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
+		return
+	}
+
+	cardID := c.Param("card_id")
 
 	var card database.Card
-
-	if err := database.DB.First(&card, "id = ? AND user_id = ?", cardId, userId).Error; err != nil {
+	if err := database.DB.First(&card, "id = ? AND user_id = ?", cardID, userIDStr).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Card not found"})
 			return
@@ -69,28 +100,70 @@ func PatchCard(c *gin.Context) {
 		return
 	}
 
+	card.ID = cardID
+	card.UserID = userIDStr
+
+	// Validate state
+	var state database.State
+	if err := database.DB.First(&state, "id = ? AND user_id = ?", card.StateID, userIDStr).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "State not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	// Validate tags
+	for _, tagID := range card.Tags {
+		var tag database.Tag
+		if err := database.DB.First(&tag, "id = ? AND user_id = ?", tagID.ID, userIDStr).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Tag not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+			return
+		}
+	}
+
+	// Replacing Tags with the new ones
+	if err := database.DB.Model(&card).Association("Tags").Replace(&card.Tags); err != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	// Save the card
 	if err := database.DB.Save(&card).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.Status(http.StatusNoContent)
 }
 
 func DeleteCard(c *gin.Context) {
-	userId := c.Param("user_id")
-	cardId := c.Param("card_id")
-
-	result := database.DB.Delete(&database.Card{}, "id = ? AND user_id = ?", cardId, userId)
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+	userIDStr, ok := utils.GetAuthenticatedUserID(c)
+	if !ok {
 		return
 	}
 
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Card not found"})
+	cardIDStr := c.Param("card_id")
+
+	var card database.Card
+	if err := database.DB.First(&card, "id = ? AND user_id = ?", cardIDStr, userIDStr).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Card not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.Status(http.StatusOK)
+	if err := database.DB.Delete(&card).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
