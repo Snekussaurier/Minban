@@ -53,12 +53,13 @@ func Login(context *gin.Context) {
 
 func CreateDefaultUser() {
 	var existingUser database.User
+	var userId = uuid.New().String()
 
 	result := database.DB.Where("name = ?", os.Getenv("USER_NAME")).First(&existingUser)
 
 	if result.Error == gorm.ErrRecordNotFound {
 		newUser := database.User{
-			ID:       uuid.New().String(),
+			ID:       userId,
 			Name:     os.Getenv("USER_NAME"),
 			Password: hashPassword(os.Getenv("USER_PASSWORD")),
 		}
@@ -69,6 +70,9 @@ func CreateDefaultUser() {
 	} else if result.Error != nil {
 		log.Printf("Error checking for existing user: %v", result.Error)
 	}
+
+	initializeStates(userId)
+	initializeTags(userId)
 }
 
 func hashPassword(password string) string {
@@ -85,4 +89,31 @@ func generateJWTToken(userID string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecretKey)
+}
+
+func initializeStates(userId string) {
+	states := []database.State{
+		{ID: 1, Name: "Todo", Position: 1, Color: "FF0000", UserID: userId},
+		{ID: 2, Name: "In Progress", Position: 2, Color: "00FF00", UserID: userId},
+		{ID: 3, Name: "Done", Position: 3, Color: "0000FF", UserID: userId},
+	}
+
+	for _, state := range states {
+		if err := database.DB.Where("id = ?", state.ID).FirstOrCreate(&state).Error; err != nil {
+			log.Fatalf("Failed to create state: %v", err)
+		}
+	}
+}
+
+func initializeTags(userId string) {
+	tags := []database.Tag{
+		{Name: "Feature", Color: "FF0000", UserID: userId},
+		{Name: "Bug", Color: "00FF00", UserID: userId},
+	}
+
+	for _, tag := range tags {
+		if err := database.DB.Where("name = ?", tag.Name).FirstOrCreate(&tag).Error; err != nil {
+			log.Fatalf("Failed to create tag: %v", err)
+		}
+	}
 }
