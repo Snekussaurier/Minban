@@ -15,17 +15,18 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: "1.23"
 
       - name: Build Project
+        working-directory: ./src
         run: |
           go mod tidy
-          go build -v ./src/...
+          go build -v ./...
 
   publish:
     name: Build and Publish Docker Image
@@ -48,7 +49,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: ghcr.io/${{ github.repository }}/minban-backend:${{ github.ref_name }}
