@@ -35,3 +35,6 @@ docker-compose.yml
 
 # ignore svg since it is being rendered by actions
 doc/*.svg
+
+# Mac stuff
+.DS_Store
