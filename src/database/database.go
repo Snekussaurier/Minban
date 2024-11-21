@@ -9,7 +9,7 @@ import (
 
 type User struct {
 	ID       string  `gorm:"type:char(36);primaryKey"`
-	Name     string  `gorm:"type:varchar(40);not null" json:"name" binding:"required"`
+	Name     string  `gorm:"type:varchar(40);not null;unique" json:"name" binding:"required"`
 	Password string  `gorm:"type:char(64);not null" json:"password" binding:"required"`
 	Cards    []Card  `gorm:"foreignKey:UserID"` // One-to-Many relationship with Card
 	Tags     []Tag   `gorm:"foreignKey:UserID"` // One-to-Many relationship with Tag
