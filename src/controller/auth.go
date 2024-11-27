@@ -45,10 +45,9 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, mod.LoginResponse{
-		Token:  token,
-		UserId: user.ID,
-	})
+	context.SetCookie("auth_token", token, 60*60*24, "/", "", false, true)
+
+	context.Status(http.StatusNoContent)
 }
 
 func CreateDefaultUser() {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -15,25 +14,15 @@ var jwtSecretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 func AuthRequried() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		authHeader := context.GetHeader("Authorization")
-		if authHeader == "" {
+		cookie, err := context.Cookie("auth_token")
+		if err != nil {
 			context.JSON(http.StatusUnauthorized,
-				mod.ErrorResponse{Error: "Authorization header missing"})
+				mod.ErrorResponse{Error: "Authorization missing"})
 			context.Abort()
 			return
 		}
 
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			context.JSON(http.StatusUnauthorized,
-				mod.ErrorResponse{Error: "Invalid authorization header format"})
-			context.Abort()
-			return
-		}
-
-		tokenString := parts[1]
-
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
