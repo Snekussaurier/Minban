@@ -79,7 +79,7 @@ func PatchTag(c *gin.Context) {
 
 	tag.ID = tagId
 
-	result := database.DB.Model(&database.State{}).Where("name = ? AND user_id = ?", tag.Name, userIDStr).Updates(tag)
+	result := database.DB.Model(&database.Tag{}).Where("id = ? AND user_id = ?", tag.ID, userIDStr).Updates(tag)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: result.Error.Error()})
 		return
