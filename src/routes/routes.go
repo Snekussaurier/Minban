@@ -8,6 +8,7 @@ import (
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
+	router.Use(middleware.CORSMiddleware())
 
 	router.POST("/api/v1/login", controller.Login)
 
