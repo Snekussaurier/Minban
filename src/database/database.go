@@ -17,7 +17,7 @@ type User struct {
 }
 
 type Card struct {
-	ID          string `gorm:"type:char(36);primaryKey"`
+	ID          string `gorm:"type:char(36);primaryKey" json:"id"`
 	Title       string `gorm:"type:varchar(60);not null" json:"title" binding:"required"`
 	Description string `gorm:"type:text;not null" json:"description"`
 	Position    int    `gorm:"not null" json:"position" binding:"required"`
