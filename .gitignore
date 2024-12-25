@@ -38,3 +38,5 @@ doc/*.svg
 
 # Mac stuff
 .DS_Store
+
+static/

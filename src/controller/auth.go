@@ -50,6 +50,16 @@ func Login(context *gin.Context) {
 	context.Status(http.StatusNoContent)
 }
 
+func Logout(context *gin.Context) {
+	context.SetCookie("minban_token", "", -1, "/", "", false, true)
+	context.Status(http.StatusNoContent)
+}
+
+func CheckAuth(context *gin.Context) {
+	// Should be authenticated at this point
+	context.Status(http.StatusOK)
+}
+
 func CreateDefaultUser() {
 	var existingUser database.User
 	var userId = uuid.New().String()

@@ -14,7 +14,7 @@ var jwtSecretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
 func AuthRequried() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		cookie, err := context.Cookie("auth_token")
+		cookie, err := context.Cookie("minban_token")
 		if err != nil {
 			context.JSON(http.StatusUnauthorized,
 				mod.ErrorResponse{Error: "Authorization missing"})

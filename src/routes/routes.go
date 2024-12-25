@@ -8,14 +8,19 @@ import (
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
+
 	router.Use(middleware.CORSMiddleware())
 
 	router.POST("/api/v1/login", controller.Login)
+	router.POST("/api/v1/logout", controller.Logout)
 
 	// Authorisation required
 	authorized := router.Group("/api/v1")
 	authorized.Use(middleware.AuthRequried())
 	{
+		// Check auth
+		authorized.GET("/check-auth", controller.CheckAuth)
+
 		// State routes
 		authorized.GET("/states", controller.GetStates)
 		authorized.POST("/state", controller.PostState)

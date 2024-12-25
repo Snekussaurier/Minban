@@ -119,7 +119,7 @@ func PatchCard(c *gin.Context) {
 		var tag database.Tag
 		if err := database.DB.First(&tag, "id = ? AND user_id = ?", tagID.ID, userIDStr).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				c.JSON(http.StatusNotFound, mod.ErrorResponse{Error: "Tag not found"})
+				c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: "Tag with ID: " + strconv.Itoa(tagID.ID) + " not found"})
 				return
 			}
 			c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
