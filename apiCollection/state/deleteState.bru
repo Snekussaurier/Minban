@@ -1,0 +1,11 @@
+meta {
+  name: deleteState
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{minban}}/api/v1/state/4
+  body: json
+  auth: inherit
+}

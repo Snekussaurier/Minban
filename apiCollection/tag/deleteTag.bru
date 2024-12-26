@@ -1,0 +1,11 @@
+meta {
+  name: deleteTag
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{minban}}/api/v1/tag/3
+  body: json
+  auth: inherit
+}

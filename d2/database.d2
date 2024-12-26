@@ -1,0 +1,58 @@
+MinBan SQLite: {
+    user:{
+        shape: sql_table
+        id: char(36) {constraint: primary_key}
+        name: varchar(40) {constraint: not_null}
+        password: char(64) {constraint: not_null}
+    } 
+
+    card: {
+        shape: sql_table
+        id: char(36) {constraint: primary_key}
+        title: varchar(60) {constraint: not_null}
+        description: text {constraint: not_null}
+        position: int {constraint: not_null}
+        state: int {constraint: foreign_key}
+        user_id: char(36) {constraint: foreign_key}
+    }
+
+    tag: {
+        shape: sql_table
+        name: varchar(20) {constraint: primary_key}
+        color: varchar(6) {constraint: not_null}
+    }
+
+    card_tags: {
+        shape: sql_table
+        card_id: varchar(36) {constraint: foreign_key}
+        tag: varchar(20) {constraint: foreign_key}
+    }
+
+    state {
+        shape: sql_table
+        id: int {constraint: primary_key}
+        name: varchar(20) {constraint: not_null} 
+        position: int {constraint: not_null}
+        color: char(6) {constraint: not_null}
+    }
+
+    user.id -> card.user_id {
+        source-arrowhead: *
+        target-arrowhead: 1
+    }
+
+    state.id -> card.state {
+        source-arrowhead: *
+        target-arrowhead: 1
+    }
+
+    card.id -> card_tags.card_id {
+        source-arrowhead: *
+        target-arrowhead: *
+    }
+    
+    tag.tag_name -> card_tags.tag {
+        source-arrowhead: *
+        target-arrowhead: *
+    }
+}

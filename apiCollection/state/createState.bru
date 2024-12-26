@@ -1,0 +1,19 @@
+meta {
+  name: createState
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{minban}}/api/v1/state
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Postboned",
+    "position": 6,
+    "color": "8957e7"
+  }
+}

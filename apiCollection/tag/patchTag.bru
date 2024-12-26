@@ -1,0 +1,18 @@
+meta {
+  name: patchTag
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{minban}}/api/v1/tag/2
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Bug",
+    "color": "fecaca"
+  }
+}
