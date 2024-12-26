@@ -40,17 +40,14 @@ MinBan SQLite: {
         source-arrowhead: *
         target-arrowhead: 1
     }
-    
     state.id -> card.state {
         source-arrowhead: *
         target-arrowhead: 1
     }
-
     card.id -> card_tags.card_id {
         source-arrowhead: *
         target-arrowhead: *
     }
-
     tag.tag_name -> card_tags.tag {
         source-arrowhead: *
         target-arrowhead: *
