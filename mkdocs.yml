@@ -1,0 +1,58 @@
+site_name: MinBan Backend Doc
+theme:
+  name: material
+  font:
+    text: Poppins
+    code: Roboto Mono
+  favicon: img/favicon.png
+  features:
+    - navigation.indexes
+    - content.code.copy
+    - content.tabs.link
+  logo: img/minban-logo.png
+
+repo_url: https://github.com/Snekussaurier/minban-backend
+
+nav:
+  - "Home": index.md
+  - "Installation":
+    - installation/index.md
+    - installation/docker.md
+    - installation/source.md
+  - "API Routes":
+    - routes/index.md
+    - "Authentication":
+      - routes/authentication/login.md
+      - routes/authentication/logout.md
+      - routes/authentication/check_auth.md
+    - "Card":
+      - routes/card/get_cards.md
+      - routes/card/create_card.md
+      - routes/card/update_card.md
+      - routes/card/delete_card.md
+    - "State":
+      - routes/state/get_states.md
+      - routes/state/create_state.md
+      - routes/state/update_state.md
+      - routes/state/delete_state.md
+    - "Tag":
+      - routes/tag/get_tags.md
+      - routes/tag/create_tag.md
+      - routes/tag/update_tag.md
+      - routes/tag/delete_tag.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - stylesheets/extra.css
