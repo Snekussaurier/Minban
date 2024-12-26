@@ -30,14 +30,14 @@ jobs:
 
       - name: Render .d2 files to SVG
         run: |
-            for file in "doc/d2"/* 
+            for file in "docs/d2"/* 
             do
                 # Extract filename without extension
                 filename=$(basename "$file" .d2)
                 echo $filename
                 # Check if the file exists and run D2Lang to render the .d2 file to .svg
                 if [[ -f "$file" ]]; then
-                docker run --rm -v ${GITHUB_WORKSPACE}:/workspace --user $(id -u):$(id -g) ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/doc/d2/$filename.d2" "/workspace/doc/img/database/$filename.svg"
+                docker run --rm -v ${GITHUB_WORKSPACE}:/workspace --user $(id -u):$(id -g) ghcr.io/snekussaurier/d2lang-docker:latest d2 "/workspace/docs/d2/$filename.d2" "/workspace/docs/img/database/$filename.svg"
                 fi
             done
 
@@ -45,6 +45,6 @@ jobs:
         run: |
             git config user.name github-actions
             git config user.email github-actions@github.com
-            git add  doc/*.svg
+            git add  docs/img/database/*.svg
             git commit -m "generated svg"
             git push
