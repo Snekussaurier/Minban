@@ -20,7 +20,6 @@ nav:
     - installation/docker.md
     - installation/source.md
   - "API Routes":
-    - routes/index.md
     - "Authentication":
       - routes/authentication/login.md
       - routes/authentication/logout.md
@@ -40,9 +39,12 @@ nav:
       - routes/tag/create_tag.md
       - routes/tag/update_tag.md
       - routes/tag/delete_tag.md
+  - "Database":
+    - database/index.md
 
 markdown_extensions:
   - admonition
+  - attr_list
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
