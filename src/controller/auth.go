@@ -45,7 +45,7 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	context.SetCookie("auth_token", token, 60*60*24, "/", "", false, true)
+	context.SetCookie("minban_token", token, 60*60*24, "/", "", false, true)
 
 	context.Status(http.StatusNoContent)
 }
