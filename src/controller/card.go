@@ -19,14 +19,41 @@ func GetCards(c *gin.Context) {
 		return
 	}
 
-	query := database.DB.Preload("Tags").Where("user_id = ?", userIDStr)
-
 	var cards []database.Card
-	if err := query.Where("user_id = ?", userIDStr).Find(&cards).Error; err != nil {
-		log.Fatalf("failed to query tags: %v", err)
+	if err := database.DB.Preload("Tags").Where("user_id = ?", userIDStr).Find(&cards).Error; err != nil {
+		log.Fatalf("failed to query cards: %v", err)
 	}
 
-	c.JSON(http.StatusOK, cards)
+	// Create a response structure with tag IDs instead of full tag objects
+	type CardResponse struct {
+		ID          string `json:"id"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		Position    int    `json:"position"`
+		StateID     int    `json:"state_id"`
+		TagIDs      []int  `json:"tags"`
+	}
+
+	var response []CardResponse
+	for _, card := range cards {
+		cardResp := CardResponse{
+			ID:          card.ID,
+			Title:       card.Title,
+			Description: card.Description,
+			Position:    card.Position,
+			StateID:     card.StateID,
+			TagIDs:      make([]int, 0, len(card.Tags)),
+		}
+
+		// Extract just the tag IDs
+		for _, tag := range card.Tags {
+			cardResp.TagIDs = append(cardResp.TagIDs, tag.ID)
+		}
+
+		response = append(response, cardResp)
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func PostCard(c *gin.Context) {
