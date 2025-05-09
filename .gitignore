@@ -20,7 +20,6 @@
 # Go workspace file
 go.work
 go.work.sum
-
 # env file
 .env
 
@@ -40,3 +39,18 @@ doc/*.svg
 .DS_Store
 
 static/
+
+# Frontend
+
+/target
+Cargo.lock
+dist
+
+# Mac OS
+.DS_Store
+
+# Node.js
+node_modules
+
+# Tailwind CSS
+assets/tailwind.css
