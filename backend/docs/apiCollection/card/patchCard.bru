@@ -1,0 +1,25 @@
+meta {
+  name: patchCard
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{minban}}/api/v1/card/b20c93e1-c894-4949-ba56-a1a86e3877c7
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Please fix this thing pretty please",
+    "description": "This is very urgent...",
+    "position": 1,
+    "state_id": 1,
+    "tags": [
+      {
+        "id": 2
+      }
+    ]
+  }
+}
