@@ -1,6 +1,7 @@
 use crate::icons::X;
 use crate::mods::StateModel;
 use crate::TagModel;
+use dioxus::logger::tracing::debug;
 use dioxus::prelude::*;
 
 #[component]
@@ -148,6 +149,7 @@ fn ColumnSettings(columns: Signal<Vec<StateModel>>) -> Element {
     };
 
     let mut edit_column_color = move |id: usize, new_color: String| {
+        debug!("Updating column color");
         columns.with_mut(|column_vec| {
             if id < column_vec.len() && is_valid_color(&new_color) {
                 column_vec[id].color = new_color;
@@ -185,11 +187,13 @@ fn ColumnSettings(columns: Signal<Vec<StateModel>>) -> Element {
                         }
                         td {
                             class: "py-2 w-4/12",
-                            input {
-                                value: column.color.clone(),
-                                maxlength: 6,
-                                oninput: move |evt| edit_column_color(id, evt.value())
+                            ColorValidatorInput {
+                                initial_value: column.color.clone(),
+                                on_input: move |new_color: String| {
+                                    if is_valid_color(&new_color) { edit_column_color(id, new_color) };
+                                }
                             }
+
                         }
                         td {
                             class: "py-2 w-1/12",
@@ -215,8 +219,11 @@ fn TagSettings(tags: Signal<Vec<TagModel>>) -> Element {
     };
 
     let mut edit_tag_color = move |id: usize, new_color: String| {
+        if !is_valid_color(&new_color) {
+            return;
+        }
         tags.with_mut(|tag_vec| {
-            if id < tag_vec.len() && is_valid_color(&new_color) {
+            if id < tag_vec.len() {
                 tag_vec[id].color = new_color;
             }
         })
@@ -252,10 +259,11 @@ fn TagSettings(tags: Signal<Vec<TagModel>>) -> Element {
                         }
                         td {
                             class: "py-2 w-4/12",
-                            input {
-                                value: tag.color.clone(),
-                                maxlength: 7,
-                                oninput: move |evt| edit_tag_color(id, evt.value())
+                            ColorValidatorInput {
+                                initial_value: tag.color.clone(),
+                                on_input: move |new_color: String| {
+                                    if is_valid_color(&new_color) { edit_tag_color(id, new_color) };
+                                }
                             }
                         }
                         td {
@@ -307,6 +315,22 @@ fn is_valid_color(color: &str) -> bool {
     }
 
     color.chars().all(|c| c.is_ascii_hexdigit())
+}
+
+#[component]
+fn ColorValidatorInput(initial_value: String, on_input: EventHandler<String>) -> Element {
+    let mut input_value = use_signal(|| initial_value);
+
+    rsx! {
+        input {
+            value: input_value,
+            maxlength: 6,
+            oninput: move |evt| {
+                input_value.set(evt.value().clone());
+                on_input.call(evt.value());
+            }
+        }
+    }
 }
 
 #[component]
