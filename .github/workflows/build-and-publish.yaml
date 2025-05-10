@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build and Publish Backend Docker Image
 
 on:
   push:
@@ -17,15 +17,17 @@ jobs:
 
     steps:
       - name: Checkout Code
+        working-directory: ./backend 
         uses: actions/checkout@v4
 
       - name: Set up Go
+        working-directory: ./backend
         uses: actions/setup-go@v5
         with:
           go-version: "1.23"
 
       - name: Build Project
-        working-directory: ./src
+        working-directory: ./backend/src
         run: |
           go mod tidy
           go build -v ./...
@@ -48,7 +50,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/snekussaurier/minban-backend
+            ghcr.io/snekussaurier/minban
           tags: |
             type=schedule
             type=ref,event=branch
@@ -63,6 +65,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker Image
+        working-directory: ./backend
         uses: docker/build-push-action@v6
         with:
           push: true
