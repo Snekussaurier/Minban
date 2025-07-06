@@ -12,6 +12,7 @@ dioxus = { version = "0.6", features = ["web", "router"] }
 futures = "0.3.31"
 
 # Debug
+serde_json = "1.0"
 reqwest = { version = "0.12.12", features = ["json"] }
 serde = "1.0.218"
 wasm-cookies = "0.2.1"

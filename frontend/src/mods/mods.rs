@@ -1,9 +1,30 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub struct BoardModel {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub token: String,
+    pub selected: bool,
+    pub cards: Vec<CardModel>,
+    pub tags: Vec<TagModel>,
+    pub states: Vec<StateModel>,
+}
+
+#[derive(Debug, Serialize, Clone, PartialEq, Default)]
+pub struct BoardLeanModel {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub token: String,
+    pub selected: bool,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Default)]
 pub struct CardModel {
     #[serde(skip_serializing)]
-    pub id: String,
+    pub id: u32,
     pub title: String,
     pub description: String,
     pub position: u32,
@@ -23,7 +44,7 @@ impl PartialOrd for CardModel {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 pub struct StateModel {
     pub id: u32,
     pub name: String,

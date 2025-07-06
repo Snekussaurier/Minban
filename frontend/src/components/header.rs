@@ -1,9 +1,12 @@
 use crate::api::logout;
 use crate::components::icons::{Logout, Settings};
+use crate::mods::BoardLeanModel;
 use dioxus::prelude::*;
 
 #[component]
 pub fn Header(on_click_settings: EventHandler) -> Element {
+    let board_signal = use_context::<Signal<BoardLeanModel>>();
+
     rsx! {
         header {
             class: "w-full flex flex-row justify-between px-6 items-start",
@@ -11,11 +14,11 @@ pub fn Header(on_click_settings: EventHandler) -> Element {
                 class: "flex flex-col",
                 h1 {
                     class: "text-3xl text-minban_dark",
-                    "Minban"
+                    "{board_signal().name}"
                 }
                 p {
                     class: "font-light text-[#7a6f83] text-sm mt-3",
-                    "A little description of the app."
+                    "{board_signal().description}"
                 }
             }
             div {

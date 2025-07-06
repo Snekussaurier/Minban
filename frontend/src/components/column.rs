@@ -1,6 +1,6 @@
 use crate::components::icons::{MoreVertical, Plus};
 use crate::components::Card;
-use crate::mods::{CardModel, StateModel};
+use crate::mods::{BoardLeanModel, CardModel, StateModel};
 use crate::patch_card;
 use crate::utils::{IsNewCardState, IsSelectingState};
 use dioxus::logger::tracing::{debug, error};
@@ -9,16 +9,17 @@ use std::collections::{BTreeSet, HashMap};
 
 #[component]
 pub fn Column(state: StateModel, cards: BTreeSet<CardModel>) -> Element {
+    let board_signal = use_context::<Signal<BoardLeanModel>>();
     let mut selected_card = use_context::<Signal<CardModel>>();
     let mut is_selecting = use_context::<Signal<IsSelectingState>>();
     let mut is_new_card = use_context::<Signal<IsNewCardState>>();
-    let mut board = use_context::<Signal<HashMap<u32, BTreeSet<CardModel>>>>();
+    let mut cards_signal = use_context::<Signal<HashMap<u32, BTreeSet<CardModel>>>>();
 
     rsx! {
         div {
             ondrop: move |_| {
                 // Check if the entry for this state exists in the board and if not create it
-                let board_read = board();
+                let board_read = cards_signal();
                 let cards_option = board_read.get(&state.id);
                 let cards_set = match cards_option {
                     Some(cards) => cards,
@@ -36,7 +37,7 @@ pub fn Column(state: StateModel, cards: BTreeSet<CardModel>) -> Element {
                 card.position = position;
                 card.state_id = state.id;
 
-                let mut board = board.write();
+                let mut board = cards_signal.write();
 
                 // Remove old card from old column
                 if let Some(old_column) = board.get_mut(&selected_card().state_id) {
@@ -50,7 +51,7 @@ pub fn Column(state: StateModel, cards: BTreeSet<CardModel>) -> Element {
                 // Sync updated card with the database
                 spawn(
                     async move {
-                        let updated_card = patch_card(&card).await;
+                        let updated_card = patch_card(&board_signal().id, &card).await;
 
                         match updated_card {
                             Ok(_) => {}
@@ -89,7 +90,7 @@ pub fn Column(state: StateModel, cards: BTreeSet<CardModel>) -> Element {
                     async move {
                         // patch all column that are updated
                         for card in updated_cards {
-                            let updated_card = patch_card(&card).await;
+                            let updated_card = patch_card(&board_signal().id, &card).await;
 
                             match updated_card {
                                 Ok(_) => {}
@@ -115,12 +116,12 @@ pub fn Column(state: StateModel, cards: BTreeSet<CardModel>) -> Element {
                     onclick: move |_| {
                         // card details on with a new card in column this column
                         selected_card.set(CardModel {
-                            id: "".to_string(),
+                            id: 0,
                             title: "".to_string(),
                             description: "".to_string(),
                             state_id: state.id,
                             // Get the last card in the column and set the position to the next one
-                            position: cards.len() as u32 + 1,
+                            position: cards.last().map_or(1u32, |card| card.position + 1),
                             tags: vec![],
                         });
                         is_new_card.set(IsNewCardState(true));
@@ -139,7 +140,7 @@ pub fn Column(state: StateModel, cards: BTreeSet<CardModel>) -> Element {
             }
             div {
                 class: "flex flex-col grow overflow-y-auto mt-4 rounded-md gap-4",
-                if let Some(column) = board().get(&state.id) {
+                if let Some(column) = cards_signal().get(&state.id) {
                     for card in column {Card { card: card.clone() }}
                 }
             }

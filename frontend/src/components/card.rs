@@ -1,11 +1,15 @@
+use dioxus::html::g::class;
 use dioxus::prelude::*;
 
 use crate::components::Tag;
-use crate::mods::{CardModel, TagModel};
+use crate::mods::{BoardLeanModel, CardModel, TagModel};
 use crate::utils::{IsNewCardState, IsSelectingState};
+
+use super::Settings;
 
 #[component]
 pub fn Card(card: CardModel) -> Element {
+    let board_signal = use_context::<Signal<BoardLeanModel>>();
     let mut selected_card = use_context::<Signal<CardModel>>();
     let mut is_selecting = use_context::<Signal<IsSelectingState>>();
     let mut is_new_card = use_context::<Signal<IsNewCardState>>();
@@ -30,6 +34,10 @@ pub fn Card(card: CardModel) -> Element {
                 }
             },
             class: "min-h-24 w-full bg-white hover:bg-slate-100 transition-color duration-200 rounded-md p-4 shrink-0 flex flex-col gap-2 cursor-pointer relative",
+            p {
+                class: "text-sm text-slate-400",
+                {board_signal().token}"-"{ card.id.to_string() }
+            }
             h1 { "{card.title}" }
             div {
                 class: "flex flex-row flex-wrap gap-2 grow items-end",

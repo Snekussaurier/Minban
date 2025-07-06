@@ -42,7 +42,7 @@ static/
 
 # Frontend
 
-/target
+**/target
 Cargo.lock
 dist
 
@@ -54,3 +54,4 @@ node_modules
 
 # Tailwind CSS
 assets/tailwind.css
+/node_modules

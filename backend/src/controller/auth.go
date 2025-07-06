@@ -78,10 +78,13 @@ func CreateDefaultUser() {
 		}
 	} else if result.Error != nil {
 		log.Printf("Error checking for existing user: %v", result.Error)
+	} else {
+		return // User already exists, no need to create
 	}
 
-	initializeStates(userId)
-	initializeTags(userId)
+	boardId := initializeBoard(userId)
+	initializeStates(boardId)
+	initializeTags(boardId)
 }
 
 func hashPassword(password string) string {
@@ -100,11 +103,29 @@ func generateJWTToken(userID string) (string, error) {
 	return token.SignedString(jwtSecretKey)
 }
 
-func initializeStates(userId string) {
+func initializeBoard(userId string) string {
+	boardId := uuid.New().String()
+	board := database.Board{
+		ID:          boardId,
+		Token:       "BRAD", // Default token, can be changed later
+		Selected:    true,   // Set as selected by default
+		Title:       "New Board",
+		Description: "This is a default board created during initialization.",
+		UserID:      userId,
+	}
+
+	if err := database.DB.Where("id = ?", board.ID).FirstOrCreate(&board).Error; err != nil {
+		log.Fatalf("Failed to create board: %v", err)
+	}
+
+	return boardId
+}
+
+func initializeStates(boardId string) {
 	states := []database.State{
-		{ID: 1, Name: "Todo", Position: 1, Color: "FF0000", UserID: userId},
-		{ID: 2, Name: "In Progress", Position: 2, Color: "00FF00", UserID: userId},
-		{ID: 3, Name: "Done", Position: 3, Color: "0000FF", UserID: userId},
+		{ID: 1, Name: "Todo", Position: 1, Color: "FF0000", BoardID: boardId},
+		{ID: 2, Name: "In Progress", Position: 2, Color: "00FF00", BoardID: boardId},
+		{ID: 3, Name: "Done", Position: 3, Color: "0000FF", BoardID: boardId},
 	}
 
 	for _, state := range states {
@@ -114,10 +135,10 @@ func initializeStates(userId string) {
 	}
 }
 
-func initializeTags(userId string) {
+func initializeTags(boardID string) {
 	tags := []database.Tag{
-		{Name: "Feature", Color: "FF0000", UserID: userId},
-		{Name: "Bug", Color: "00FF00", UserID: userId},
+		{Name: "Feature", Color: "FF0000", BoardID: boardID},
+		{Name: "Bug", Color: "00FF00", BoardID: boardID},
 	}
 
 	for _, tag := range tags {

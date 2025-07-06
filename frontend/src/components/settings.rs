@@ -1,13 +1,14 @@
+use crate::api::{patch_states, patch_tags};
 use crate::icons::X;
-use crate::mods::StateModel;
+use crate::mods::{BoardLeanModel, StateModel};
 use crate::TagModel;
-use dioxus::logger::tracing::debug;
 use dioxus::prelude::*;
 
 #[component]
 pub fn Settings(on_click_close: EventHandler) -> Element {
     let current_setting_page = use_signal(|| SettingsView::Column);
 
+    let board_signal = use_context::<Signal<BoardLeanModel>>();
     let mut columns = use_context::<Signal<Vec<StateModel>>>();
     let mut tags = use_context::<Signal<Vec<TagModel>>>();
 
@@ -17,6 +18,11 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
     let mut save_settings = move || {
         columns.set(draft_columns.read().to_vec());
         tags.set(draft_tags.read().to_vec());
+        spawn(async move {
+            patch_states(&board_signal().id, &columns()).await;
+            patch_tags(&board_signal().id, &tags()).await;
+            on_click_close.call(());
+        });
     };
 
     rsx! {
@@ -57,7 +63,6 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
                             class: "rounded-md w-32 p-2 bg-minban_dark hover:bg-minban_highlight text-white duration-200",
                             onclick: move |_| {
                                 save_settings();
-                                on_click_close.call(());
                             },
                             "Save"
                         }
@@ -149,7 +154,6 @@ fn ColumnSettings(columns: Signal<Vec<StateModel>>) -> Element {
     };
 
     let mut edit_column_color = move |id: usize, new_color: String| {
-        debug!("Updating column color");
         columns.with_mut(|column_vec| {
             if id < column_vec.len() && is_valid_color(&new_color) {
                 column_vec[id].color = new_color;

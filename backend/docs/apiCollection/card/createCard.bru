@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{minban}}/api/v1/card
+  url: {{minban}}/api/v1/{{board_id}}/card
   body: json
   auth: inherit
 }
@@ -14,8 +14,8 @@ body:json {
   {
     "title": "Wow! We did it!",
     "description": "Incredible!",
-    "position": 0,
+    "position": 2,
     "state_id": 3,
-    "tags": []
+    "tags": [1, 2]
   }
 }

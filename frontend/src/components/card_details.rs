@@ -1,6 +1,7 @@
 use crate::components::editable_tag::EditableTag;
 use crate::components::icons::{Plus, TrashCan};
 use crate::components::tag::Tag;
+use crate::mods::BoardLeanModel;
 use crate::utils::{IsNewCardState, IsSelectingState};
 use crate::TagModel;
 use crate::{CardModel, StateModel};
@@ -15,6 +16,7 @@ pub fn CardDetails(
     on_update: EventHandler<CardModel>,
     on_delete: EventHandler<CardModel>,
 ) -> Element {
+    let board_signal = use_context::<Signal<BoardLeanModel>>();
     let mut card = use_context::<Signal<CardModel>>();
     let mut is_selecting = use_context::<Signal<IsSelectingState>>();
     let is_new_card = use_context::<Signal<IsNewCardState>>();
@@ -35,8 +37,18 @@ pub fn CardDetails(
                     div {
                         class: "p-4 bg-slate-100 rounded-t-md",
                         div {
-                            class: "flex flex-row items-start gap-2",
-                            AutoResizeTextarea { card: card }
+                            class: "flex flex-row items-start gap-2 w-full",
+                            div {
+                                class: "flex flex-col items-start gap-2 w-full",
+                                if !is_new_card().0 {
+                                    p {
+                                        class: "text-sm text-slate-400",
+                                        {board_signal().token}"-"{ card().id.to_string() }
+                                    }
+                                }
+                                AutoResizeTextarea { card: card }
+
+                            }
                             div {
                                 class: "flex flex-col justify-between",
                                 if !is_new_card().0 {
@@ -52,6 +64,7 @@ pub fn CardDetails(
                             }
 
                         }
+
                         div {
                             class: "flex flex-row flex-wrap gap-2 mt-4",
                             for tag_id in card.read().tags.iter() {

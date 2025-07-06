@@ -5,7 +5,6 @@ use components::icons::Plus;
 use components::*;
 use dioxus::logger::tracing::{error, info};
 use dioxus::prelude::*;
-use futures::try_join;
 use mods::*;
 use reqwest::Error;
 use std::collections::{BTreeSet, HashMap};
@@ -30,10 +29,10 @@ fn main() {
 fn App() -> Element {
     let login_state = use_resource(check_auth);
     const VERSION: &str = env!("CARGO_PKG_VERSION");
-    rsx!(
+    rsx! {
         document::Stylesheet {
             // Urls are relative to your Cargo.toml file
-            href: asset!("/assets/tailwind.css")
+            href: asset!("assets/tailwind.css")
         }
         div {
             class: "flex items-center justify-center h-screen w-screen bg-gray-100 relative",
@@ -51,11 +50,12 @@ fn App() -> Element {
                 None => rsx!{ Loading {} },
             }
         }
-    )
+    }
 }
 
 #[component]
 fn Dashboard() -> Element {
+    let mut boards_signal = use_context_provider(|| Signal::new(BoardLeanModel::default()));
     let mut board_signal = use_context_provider(|| Signal::new(HashMap::new()));
     let mut states_signal = use_context_provider(|| Signal::new(Vec::new() as Vec<StateModel>));
     let mut tags_signal = use_context_provider(|| Signal::new(Vec::new() as Vec<TagModel>));
@@ -64,6 +64,7 @@ fn Dashboard() -> Element {
         let fetched_data = fetch_data().await;
         match fetched_data {
             Ok(fetched_data) => {
+                boards_signal.set(fetched_data.board);
                 board_signal.set(fetched_data.cards);
                 states_signal.set(fetched_data.columns);
                 tags_signal.set(fetched_data.tags);
@@ -92,7 +93,7 @@ fn Dashboard() -> Element {
                     CardDetails {
                         on_create: move |mut card: CardModel| {
                             spawn(async move {
-                                let created_card_id = create_card(&card).await;
+                                let created_card_id = create_card(&boards_signal().id, &card).await;
                                 match created_card_id {
                                     Ok(id_str) => {
                                         card.id = id_str;
@@ -110,7 +111,7 @@ fn Dashboard() -> Element {
 
                             column.replace(card.clone());
                             spawn(async move {
-                                let updated_card = patch_card(&card).await;
+                                let updated_card = patch_card(&boards_signal().id, &card).await;
 
                                 match updated_card {
                                     Ok(_) => {}
@@ -126,7 +127,7 @@ fn Dashboard() -> Element {
                             cards.remove(&card);
 
                             spawn(async move {
-                                let deleted_card = delete_card(&card.id).await;
+                                let deleted_card = delete_card(&boards_signal().id, card.id).await;
                                 match deleted_card {
                                     Ok(_) => {}
                                     Err(err) => {
@@ -188,21 +189,5 @@ fn ColumnContainer(states: Vec<StateModel>, board: HashMap<u32, BTreeSet<CardMod
 }
 
 async fn fetch_data() -> Result<FetchResponse, Error> {
-    let cards = get_cards();
-    let states = get_states();
-    let tags = get_tags();
-
-    let fetched_tuple = try_join!(cards, states, tags);
-
-    match fetched_tuple {
-        Ok(tuple) => {
-            let fetched_response = FetchResponse {
-                cards: tuple.0,
-                columns: tuple.1,
-                tags: tuple.2,
-            };
-            Ok(fetched_response)
-        }
-        Err(err) => Err(err),
-    }
+    Ok(get_board().await?)
 }

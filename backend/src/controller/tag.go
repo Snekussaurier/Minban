@@ -1,51 +1,53 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/snekussaurier/minban-backend/database"
 	"github.com/snekussaurier/minban-backend/mod"
-	"github.com/snekussaurier/minban-backend/utils"
+	"gorm.io/gorm"
 )
 
 func GetTags(c *gin.Context) {
-	userIDStr, ok := utils.GetAuthenticatedUserID(c)
-	if !ok {
-		return
-	}
+	boardID := c.Param("board_id")
 
 	var tags []database.Tag
-	if err := database.DB.Where("user_id = ?", userIDStr).Find(&tags).Error; err != nil {
-		log.Fatalf("failed to query tags: %v", err)
+	if err := database.DB.Where("board_id = ?", boardID).Find(&tags).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, tags)
 }
 
 func PostTag(c *gin.Context) {
-	userIDStr, ok := utils.GetAuthenticatedUserID(c)
-	if !ok {
-		return
+	boardID := c.Param("board_id")
+
+	type TagCreateRequest struct {
+		Name  string `json:"name" binding:"required"`
+		Color string `json:"color" binding:"required"`
 	}
 
-	var tag = database.Tag{}
+	var tagRequest TagCreateRequest
 
-	if err := c.ShouldBindJSON(&tag); err != nil {
+	if err := c.ShouldBindJSON(&tagRequest); err != nil {
 		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	tag.UserID = userIDStr
-
 	var existingTag database.Tag
-
-	result := database.DB.First(&existingTag, "user_id = ? AND name = ?", userIDStr, tag.Name)
+	result := database.DB.First(&existingTag, "board_id = ? AND name = ?", boardID, tagRequest.Name)
 	if result.Error == nil {
 		c.JSON(http.StatusConflict, mod.ErrorResponse{Error: "Tag with this name already exists"})
 		return
+	}
+
+	tag := database.Tag{
+		Name:    tagRequest.Name,
+		Color:   tagRequest.Color,
+		BoardID: boardID,
 	}
 
 	if err := database.DB.Create(&tag).Error; err != nil {
@@ -57,29 +59,31 @@ func PostTag(c *gin.Context) {
 }
 
 func PatchTag(c *gin.Context) {
-	userIDStr, ok := utils.GetAuthenticatedUserID(c)
-	if !ok {
-		return
+	boardID := c.Param("board_id")
+
+	type TagUpdateRequest struct {
+		Name  string `json:"name" binding:"required"`
+		Color string `json:"color" binding:"required"`
 	}
 
-	var tag = database.Tag{}
+	var tagRequest TagUpdateRequest
 	var tagIdStr = c.Param("tag_id")
 
-	if err := c.ShouldBindJSON(&tag); err != nil {
+	if err := c.ShouldBindJSON(&tagRequest); err != nil {
 		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	tag.UserID = userIDStr
 	tagId, err := strconv.Atoi(tagIdStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	tag.ID = tagId
-
-	result := database.DB.Model(&database.Tag{}).Where("id = ? AND user_id = ?", tag.ID, userIDStr).Updates(tag)
+	result := database.DB.Model(&database.Tag{}).Where("id = ? AND board_id = ?", tagId, boardID).Updates(map[string]interface{}{
+		"name":  tagRequest.Name,
+		"color": tagRequest.Color,
+	})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: result.Error.Error()})
 		return
@@ -93,11 +97,45 @@ func PatchTag(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func DeleteTag(c *gin.Context) {
-	userIDStr, ok := utils.GetAuthenticatedUserID(c)
-	if !ok {
+func PatchTags(c *gin.Context) {
+	boardID := c.Param("board_id")
+
+	type TagUpdateRequest struct {
+		ID    int    `json:"id" binding:"required"`
+		Name  string `json:"name" binding:"required"`
+		Color string `json:"color" binding:"required"`
+	}
+
+	var tagRequests []TagUpdateRequest
+
+	if err := c.ShouldBindJSON(&tagRequests); err != nil {
+		c.JSON(http.StatusBadRequest, mod.ErrorResponse{Error: err.Error()})
 		return
 	}
+
+	var err = database.DB.Transaction(func(tx *gorm.DB) error {
+		for _, tagReq := range tagRequests {
+			if err := tx.Model(&database.Tag{}).Where("id = ? AND board_id = ?", tagReq.ID, boardID).Updates(map[string]interface{}{
+				"name":  tagReq.Name,
+				"color": tagReq.Color,
+			}).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func DeleteTag(c *gin.Context) {
+	boardID := c.Param("board_id")
 
 	var tagIdStr = c.Param("tag_id")
 	tagId, err := strconv.Atoi(tagIdStr)
@@ -106,7 +144,7 @@ func DeleteTag(c *gin.Context) {
 		return
 	}
 
-	result := database.DB.Where("id = ? AND user_id = ?", tagId, userIDStr).Delete(&database.Tag{})
+	result := database.DB.Where("id = ? AND board_id = ?", tagId, boardID).Delete(&database.Tag{})
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, mod.ErrorResponse{Error: result.Error.Error()})
 		return

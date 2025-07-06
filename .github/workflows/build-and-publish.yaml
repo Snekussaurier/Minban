@@ -17,7 +17,6 @@ jobs:
 
     steps:
       - name: Checkout Code
-        working-directory: ./backend 
         uses: actions/checkout@v4
 
       - name: Set up Go
