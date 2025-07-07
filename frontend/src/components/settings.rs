@@ -6,12 +6,13 @@ use dioxus::prelude::*;
 
 #[component]
 pub fn Settings(on_click_close: EventHandler) -> Element {
-    let current_setting_page = use_signal(|| SettingsView::Column);
+    let current_setting_page = use_signal(|| SettingsView::Board);
 
-    let board_signal = use_context::<Signal<BoardLeanModel>>();
+    let mut board_signal = use_context::<Signal<BoardLeanModel>>();
     let mut columns = use_context::<Signal<Vec<StateModel>>>();
     let mut tags = use_context::<Signal<Vec<TagModel>>>();
 
+    let draft_board = use_signal(|| board_signal.read().clone());
     let draft_columns = use_signal(|| columns.read().clone());
     let draft_tags = use_signal(|| tags.read().clone());
 
@@ -27,7 +28,7 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
 
     rsx! {
         div {
-            class: "absolute top-0 left-0 z-50 w-full h-full flex backdrop-blur-sm items-center justify-center bg-slate-950 bg-opacity-20",
+            class: "absolute top-0 left-0 z-50 w-full h-full flex backdrop-blur-sm items-center justify-center bg-slate-950/20",
             div {
                 class: "max-w-5xl w-full max-h-[35rem] h-full bg-white rounded-md flex flex-row overflow-hidden",
                 SettingsNavigation {
@@ -38,11 +39,11 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
                     div {
                         class: "w-full flex flex-row justify-between border-b border-slate-100 p-4",
                         h1 {
-                            class: "text-2xl text-minban_dark",
+                            class: "text-2xl text-minban-dark",
                             {current_setting_page.read().title()}
                         }
                         button {
-                            class: "text-slate-400 hover:text-minban_dark duration-200",
+                            class: "text-slate-400 hover:text-minban-dark duration-200",
                             onclick: move |_| {
                                 on_click_close.call(());
                             },
@@ -52,6 +53,7 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
                     div {
                         class: "p-4 overflow-auto w-full h-full",
                         match *current_setting_page.read() {
+                            SettingsView::Board => rsx! { BoardSettings { board: draft_board } },
                             SettingsView::Column => rsx! { ColumnSettings { columns: draft_columns } },
                             SettingsView::Tag => rsx! { TagSettings { tags: draft_tags } },
                             SettingsView::SoftwareUpdates => rsx! { SoftwareUpdatesSettings {  } }
@@ -60,14 +62,14 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
                     div {
                         class: "w-full flex flex-row gap-4 border-t border-slate-100 p-4 justify-end",
                         button {
-                            class: "rounded-md w-32 p-2 bg-minban_dark hover:bg-minban_highlight text-white duration-200",
+                            class: "rounded-md w-32 p-2 bg-minban-dark hover:bg-minban-highlight text-white duration-200",
                             onclick: move |_| {
                                 save_settings();
                             },
                             "Save"
                         }
                         button {
-                            class: "rounded-md w-32 p-2 bg-slate-100 text-slate-400 hover:text-minban_dark duration-200",
+                            class: "rounded-md w-32 p-2 bg-slate-100 text-slate-400 hover:text-minban-dark duration-200",
                             onclick: move |_| {
                                 on_click_close.call(());
                             },
@@ -89,6 +91,14 @@ fn SettingsNavigation(mut current_setting_page: Signal<SettingsView>) -> Element
             h1 {
                 class: "mb-4",
                 "Settings"
+            }
+            NavigationButton {
+                text: "Board".to_string(),
+                current_selection: current_setting_page(),
+                click_value: SettingsView::Board,
+                on_click: move |_| {
+                    current_setting_page.set(SettingsView::Board);
+                }
             }
             NavigationButton {
                 text: "Columns".to_string(),
@@ -126,9 +136,9 @@ fn NavigationButton(
     on_click: EventHandler,
 ) -> Element {
     let button_style = if current_selection == click_value {
-        "bg-minban_dark text-white"
+        "bg-minban-dark text-white"
     } else {
-        "text-slate-400 hover:bg-slate-200 hover:text-minban_dark"
+        "text-slate-400 hover:bg-slate-200 hover:text-minban-dark"
     };
 
     rsx! {
@@ -139,6 +149,69 @@ fn NavigationButton(
                 on_click.call(());
             },
             {text}
+        }
+    }
+}
+
+#[component]
+fn BoardSettings(board: Signal<BoardLeanModel>) -> Element {
+    rsx! {
+        div {
+            class: "flex flex-col space-y-2",
+            div {
+                class: "flex flex-col",
+                p {
+                    class: "text-slate-400 mb-2",
+                    "Board Name"
+                }
+                input {
+                    class: "w-full text-slate-900 text-lg bg-transparent border-none placeholder-slate-400",
+                    value: board().name,
+                    maxlength: 20,
+                    placeholder: "Enter board name",
+                }
+                p {
+                    class: "text-xs text-slate-400 min-w-0 mt-1",
+                    "Max 20 characters"
+                }
+            }
+
+            div {
+                class: "flex flex-col mt-2 pt-2 border-t border-slate-100",
+                p {
+                    class: "text-slate-400 mb-2",
+                    "Board Description"
+                }
+                input {
+                    class: "w-full text-slate-900 text-lg bg-transparent border-none placeholder-slate-400",
+                    value: board().description,
+                    maxlength: 120,
+                    rows: 2,
+                    placeholder: "Describe what this board is about",
+                }
+                p {
+                    class: "text-xs text-slate-400 min-w-0 mt-1",
+                    "Max 120 characters"
+                }
+            }
+
+            div {
+                class: "flex flex-col mt-2 pt-2 border-t border-slate-100",
+                p {
+                    class: "text-slate-400 mb-2",
+                    "Token"
+                }
+                input {
+                    class: "w-full text-slate-900 text-lg bg-transparent border-none placeholder-slate-400 font-mono",
+                    value: board().token,
+                    maxlength: 4,
+                    placeholder: "ABC",
+                }
+                p {
+                    class: "text-xs text-slate-400 min-w-0 mt-1",
+                    "Card prefix (max 4)"
+                }
+            }
         }
     }
 }
@@ -294,6 +367,7 @@ fn SoftwareUpdatesSettings() -> Element {
 
 #[derive(PartialEq, Clone)]
 enum SettingsView {
+    Board,
     Column,
     Tag,
     SoftwareUpdates,
@@ -306,6 +380,7 @@ trait SettingsTrait {
 impl SettingsTrait for SettingsView {
     fn title(&self) -> &str {
         match self {
+            SettingsView::Board => "Board",
             SettingsView::Column => "Columns",
             SettingsView::Tag => "Tags",
             SettingsView::SoftwareUpdates => "Software Updates",
