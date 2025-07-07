@@ -26,7 +26,7 @@ pub fn Login(mut login_state: Resource<Result<LoginState, Error>>) -> Element {
 
             },
             h1 {
-                class: "text-3xl text-minban_dark text-center",
+                class: "text-3xl text-minban-dark text-center",
                 "Minban"
             }
             input {
@@ -48,7 +48,7 @@ pub fn Login(mut login_state: Resource<Result<LoginState, Error>>) -> Element {
                 "{error_text}"
             }
             input {
-                class: "rounded-md p-2 cursor-pointer bg-minban_dark hover:bg-minban_highlight transition-color duration-200 text-white mt-2",
+                class: "rounded-md p-2 cursor-pointer bg-minban-dark hover:bg-minban-highlight transition-color duration-200 text-white mt-2",
                 r#type: "submit",
                 value: "Login"
             }

@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "./src/**/*.{rs,html,css}";
+@theme {
+  --color-minban-dark: #5a5b70;
+  --color-minban-highlight: #a294f9;
+  --font-sans: Poppins, sans-serif;
+}

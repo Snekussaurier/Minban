@@ -13,7 +13,7 @@ pub fn Header(on_click_settings: EventHandler) -> Element {
             div {
                 class: "flex flex-col",
                 h1 {
-                    class: "text-3xl text-minban_dark",
+                    class: "text-3xl text-minban-dark",
                     "{board_signal().name}"
                 }
                 p {
@@ -24,7 +24,7 @@ pub fn Header(on_click_settings: EventHandler) -> Element {
             div {
                 class: "flex flex-row gap-4",
                 button {
-                    class: "text-slate-400 hover:text-minban_dark duration-200",
+                    class: "text-slate-400 hover:text-minban-dark duration-200",
                     onclick: move |_| {
                         on_click_settings.call(());
                     },

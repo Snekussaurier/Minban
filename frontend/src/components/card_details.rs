@@ -28,7 +28,7 @@ pub fn CardDetails(
     rsx! {
         div {
             style: "display: {display}",
-            class: "absolute top-0 left-0 z-50 w-full h-full backdrop-blur-sm items-center justify-center bg-slate-950 bg-opacity-20",
+            class: "absolute top-0 left-0 z-50 w-full h-full backdrop-blur-sm items-center justify-center bg-slate-950/20",
             div {
                 class: "bg-white rounded-md w-4/5 max-w-lg h-4/5 max-h-[756px] shadow-xl flex flex-col gap-4",
                 div {
@@ -84,7 +84,7 @@ pub fn CardDetails(
                             button {
                                 onclick: move |_| { show_dropdown.set(!show_dropdown()) },
                                 style: "color: {color_dropdown_tag}",
-                                class: "rounded-full px-3 py-1 flex justify-center items-center text-slate-400 hover:text-minban_dark duration-200 relative bg-slate-200",
+                                class: "rounded-full px-3 py-1 flex justify-center items-center text-slate-400 hover:text-minban-dark duration-200 relative bg-slate-200",
                                 p {
                                     class: "text-sm mr-1",
                                     "Add tag"
@@ -110,7 +110,7 @@ pub fn CardDetails(
                     div {
                         class: "flex flex-row gap-4 justify-end",
                         button {
-                            class: "rounded-md p-2 bg-minban_dark hover:bg-minban_highlight text-white flex-grow duration-200",
+                            class: "rounded-md p-2 bg-minban-dark hover:bg-minban-highlight text-white flex-grow duration-200",
                             onclick: move |_| {
                                 if is_new_card().0 {
                                     on_create.call(card.read().clone());
@@ -129,7 +129,7 @@ pub fn CardDetails(
                             }
                         }
                         button {
-                            class: "rounded-md p-2 bg-slate-100 text-slate-400 hover:text-minban_dark duration-200 flex-grow",
+                            class: "rounded-md p-2 bg-slate-100 text-slate-400 hover:text-minban-dark duration-200 flex-grow",
                             onclick: move |_| {
                                 is_selecting.set(IsSelectingState(false));
                                 show_dropdown.set(false);
