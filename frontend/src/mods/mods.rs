@@ -14,6 +14,7 @@ pub struct BoardModel {
 
 #[derive(Debug, Serialize, Clone, PartialEq, Default)]
 pub struct BoardLeanModel {
+    #[serde(skip_serializing)]
     pub id: String,
     pub name: String,
     pub description: String,

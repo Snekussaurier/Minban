@@ -1,4 +1,4 @@
-use crate::api::{patch_states, patch_tags};
+use crate::api::{patch_board, patch_states, patch_tags};
 use crate::icons::X;
 use crate::mods::{BoardLeanModel, StateModel};
 use crate::TagModel;
@@ -17,11 +17,14 @@ pub fn Settings(on_click_close: EventHandler) -> Element {
     let draft_tags = use_signal(|| tags.read().clone());
 
     let mut save_settings = move || {
+        board_signal.set(draft_board());
         columns.set(draft_columns.read().to_vec());
         tags.set(draft_tags.read().to_vec());
         spawn(async move {
+            patch_board(&board_signal()).await;
             patch_states(&board_signal().id, &columns()).await;
             patch_tags(&board_signal().id, &tags()).await;
+
             on_click_close.call(());
         });
     };
@@ -169,6 +172,7 @@ fn BoardSettings(board: Signal<BoardLeanModel>) -> Element {
                     value: board().name,
                     maxlength: 20,
                     placeholder: "Enter board name",
+                    oninput: move |evt| board.write().name = evt.value()
                 }
                 p {
                     class: "text-xs text-slate-400 min-w-0 mt-1",
@@ -186,8 +190,8 @@ fn BoardSettings(board: Signal<BoardLeanModel>) -> Element {
                     class: "w-full text-slate-900 text-lg bg-transparent border-none placeholder-slate-400",
                     value: board().description,
                     maxlength: 120,
-                    rows: 2,
                     placeholder: "Describe what this board is about",
+                    oninput: move |evt| board.write().description = evt.value()
                 }
                 p {
                     class: "text-xs text-slate-400 min-w-0 mt-1",
@@ -206,6 +210,7 @@ fn BoardSettings(board: Signal<BoardLeanModel>) -> Element {
                     value: board().token,
                     maxlength: 4,
                     placeholder: "ABC",
+                    oninput: move |evt| board.write().token = evt.value()
                 }
                 p {
                     class: "text-xs text-slate-400 min-w-0 mt-1",

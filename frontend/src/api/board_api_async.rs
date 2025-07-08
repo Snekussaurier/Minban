@@ -32,10 +32,6 @@ pub async fn get_board() -> Result<FetchResponse, reqwest::Error> {
             .insert(card);
     }
 
-    for (state_id, cards) in &board_cards {
-        debug!("State ID {}: {} cards", state_id, cards.len());
-    }
-
     let fetch_response = FetchResponse {
         board: BoardLeanModel {
             id: board.id,
@@ -50,4 +46,21 @@ pub async fn get_board() -> Result<FetchResponse, reqwest::Error> {
     };
 
     Ok(fetch_response)
+}
+
+pub async fn patch_board(board: &BoardLeanModel) -> Result<(), reqwest::Error> {
+    let client = reqwest::Client::builder().build()?;
+
+    let url = format!("{}{}{}{}", BASE_API_URL, API_VERSION, "board/", board.id);
+
+    let response = client
+        .patch(url)
+        .json(board)
+        .header("Content-Type", "application/json")
+        .fetch_credentials_include()
+        .send()
+        .await?
+        .error_for_status()?;
+
+    Ok(())
 }

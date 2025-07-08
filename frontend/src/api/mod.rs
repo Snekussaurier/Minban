@@ -5,6 +5,7 @@ pub use auth_api_async::logout;
 
 mod board_api_async;
 pub use board_api_async::get_board;
+pub use board_api_async::patch_board;
 
 mod card_api_async;
 pub use card_api_async::create_card;
