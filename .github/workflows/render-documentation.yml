@@ -30,7 +30,7 @@ jobs:
 
       - name: Render .d2 files to SVG
         run: |
-            for file in "docs/d2"/* 
+            for file in "**/docs/d2"/* 
             do
                 # Extract filename without extension
                 filename=$(basename "$file" .d2)
@@ -45,7 +45,7 @@ jobs:
         run: |
             git config user.name github-actions
             git config user.email github-actions@github.com
-            git add  docs/img/database/*.svg
+            git add docs/img/database/*.svg
             if git diff --cached --quiet; then
               echo "No changes to commit."
             else
