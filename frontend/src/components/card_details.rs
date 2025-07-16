@@ -81,18 +81,20 @@ pub fn CardDetails(
                                     }
                                 }
                             }
-                            button {
-                                onclick: move |_| { show_dropdown.set(!show_dropdown()) },
-                                style: "color: {color_dropdown_tag}",
-                                class: "rounded-full px-3 py-1 flex justify-center items-center text-slate-400 hover:text-minban-dark duration-200 relative bg-slate-200",
-                                p {
-                                    class: "text-sm mr-1",
-                                    "Add tag"
+                            if card().tags.len() < tags().len() {
+                               button {
+                                    onclick: move |_| { show_dropdown.set(!show_dropdown()) },
+                                    style: "color: {color_dropdown_tag}",
+                                    class: "rounded-full px-3 py-1 flex justify-center items-center text-slate-400 hover:text-minban-dark duration-200 relative bg-slate-200",
+                                    p {
+                                        class: "text-sm mr-1",
+                                        "Add tag"
+                                    }
+                                    Plus {}
+                                    TagSelectDropdown { card: card, is_selecting_dropdown: show_dropdown() }
                                 }
-                                Plus {}
-                                TagSelectDropdown { card: card, is_selecting_dropdown: show_dropdown() }
                             }
-                        }
+                         }
                     }
                 }
                 div {
