@@ -17,6 +17,7 @@ reqwest = { version = "0.12.12", features = ["json"] }
 serde = "1.0.218"
 wasm-cookies = "0.2.1"
 web-sys = { version = "0.3.77", features = ["HtmlDocument", "CssStyleDeclaration", "HtmlElement"] }
+semver = "1.0.26"
 
 [profile]
 

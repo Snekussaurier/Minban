@@ -59,3 +59,11 @@ pub struct TagModel {
     pub name: String,
     pub color: String,
 }
+
+#[derive(Deserialize, Debug)]
+pub struct GitHubRelease {
+    pub tag_name: String,
+    pub body: String,
+    name: String,
+    published_at: String,
+}

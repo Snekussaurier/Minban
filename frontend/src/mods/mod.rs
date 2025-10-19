@@ -2,6 +2,7 @@ mod mods;
 pub use mods::BoardLeanModel;
 pub use mods::BoardModel;
 pub use mods::CardModel;
+pub use mods::GitHubRelease;
 pub use mods::StateModel;
 pub use mods::TagModel;
 

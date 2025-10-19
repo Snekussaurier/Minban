@@ -1,8 +1,9 @@
-use crate::api::{patch_board, patch_states, patch_tags};
+use crate::api::{get_latest_release, patch_board, patch_states, patch_tags};
 use crate::icons::X;
 use crate::mods::{BoardLeanModel, StateModel};
 use crate::TagModel;
 use dioxus::prelude::*;
+use serde_json::value;
 
 #[component]
 pub fn Settings(on_click_close: EventHandler) -> Element {
@@ -363,9 +364,39 @@ fn TagSettings(tags: Signal<Vec<TagModel>>) -> Element {
 
 #[component]
 fn SoftwareUpdatesSettings() -> Element {
+    let latest = use_resource(get_latest_release);
+
     rsx! {
-        div {
-            "Yohoo software updates"
+        match &*latest.read_unchecked() {
+            Some(Ok(latest_tag)) => {
+                let current_version = env!("CARGO_PKG_VERSION");
+                let status = compare_versions(current_version, &latest_tag.tag_name);
+
+                rsx! {
+                    p {
+                        "Current version: v{current_version}"
+                    }
+                    p {
+                        "Latest version: {latest_tag.tag_name}"
+                    }
+                    p {
+                        match status {
+                            Ok(std::cmp::Ordering::Less) => "Update available!",
+                            Ok(std::cmp::Ordering::Equal) => "You're up to date",
+                            Ok(std::cmp::Ordering::Greater) => "You're running a pre-release version",
+                            Err(_) => "Version comparison failed"
+                        }
+                    }
+                    textarea {
+                        class: "w-full h-full font-mono",
+                        value: "{latest_tag.body}",
+                        resize: "None"
+
+                    }
+                }
+            },
+            None => rsx!{ "Loading..." },
+            Some(Err(err)) => rsx! { "{err}" }
         }
     }
 }
@@ -376,6 +407,18 @@ enum SettingsView {
     Column,
     Tag,
     SoftwareUpdates,
+}
+
+fn compare_versions(current: &str, latest: &str) -> Result<std::cmp::Ordering, semver::Error> {
+    use semver::Version;
+
+    let current_clean = current.trim_start_matches('v');
+    let latest_clean = latest.trim_start_matches('v');
+
+    let current_version = Version::parse(current_clean)?;
+    let latest_version = Version::parse(latest_clean)?;
+
+    Ok(current_version.cmp(&latest_version))
 }
 
 trait SettingsTrait {

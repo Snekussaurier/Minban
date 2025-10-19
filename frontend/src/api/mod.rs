@@ -26,3 +26,6 @@ pub use tag_api_async::patch_tag;
 pub use tag_api_async::patch_tags;
 
 mod routes;
+
+mod github_api_async;
+pub use github_api_async::get_latest_release;

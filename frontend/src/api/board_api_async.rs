@@ -1,8 +1,6 @@
 use std::collections::BTreeSet;
 use std::collections::HashMap;
 
-use dioxus::logger::tracing::debug;
-
 use crate::api::routes::{API_VERSION, BASE_API_URL};
 
 use crate::mods::FetchResponse;
